@@ -2,7 +2,7 @@ from setuptools import find_packages, setup
 
 
 setup(
-    name='crawling_helpers',  # Name of your package
+    name='toolkit',  # Name of your package
     version='0.1',  # Package version
     author='Qasim Javed',  # Your name or the name of the package author
     author_email='qasim.javed012@gmail.com',  # Author's email
