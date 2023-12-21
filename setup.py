@@ -8,6 +8,6 @@ setup(
     url="https://github.com/qasimjaved/helpers",
     author="qasim_javed",
     author_email="qasim.javed012@gmail.com",
-    keywords=["pip", "helpers"],
+    keywords=["pip", "crawling", "helpers"],
     install_requires=["Scrapy"],
 )
