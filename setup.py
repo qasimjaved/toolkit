@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="helpers",
+    name="crawling_helpers",
     packages=find_packages(include=["helpers", "helpers.*"]),
     description="WebScraping Helpers Package",
     version="0.1",
