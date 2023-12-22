@@ -12,7 +12,7 @@ setup(
     url='https://github.com/qasimjaved/helpers',  # Link to the repository
     packages=find_packages(),  # Finds and lists all packages
     install_requires=[
-        'Scrapy',  # Example of a dependency, add others as needed
+        'selenium==4.16.0',  # Example of a dependency, add others as needed
     ],
     classifiers=[
         # Classifiers help users find your project by categorizing it.
