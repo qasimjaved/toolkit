@@ -32,6 +32,7 @@ def find_elements(driver, xpath, timeout=0):
         return elements
     except:
         print("Timed out waiting for the element to appear.")
+        return []
 
 
 def find_element(driver, xpath, timeout=0):
@@ -73,6 +74,7 @@ def find_attributes(driver, xpath, attribute, timeout=0):
     elements = find_elements(driver, xpath, timeout=timeout)
     if elements:
         return [element.get_attribute(attribute) for element in elements]
+    return []
 
 
 def find_attribute(driver, xpath, attribute, timeout=0):
@@ -108,5 +110,5 @@ def scroll_down(driver):
 
 
 def scroll_up(driver, limit=10):
-    for i in range(limit):
+    for _ in range(limit):
         driver.execute_script("scrollBy(0,-500);")
