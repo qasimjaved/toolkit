@@ -15,32 +15,38 @@ def launch_browser():
     return driver
 
 
-def find_elements(driver, xpath):
+def find_elements(driver, xpath, timeout=0):
     """
     Get single_element matching xpath
 
     :param driver:
     :return: element
     """
+    try:
+        if timeout:
+            elements = WebDriverWait(driver, timeout).until(
+                EC.presence_of_all_elements_located((By.XPATH, xpath))
+            )
+        else:
+            elements = driver.find_elements(by=By.XPATH, value=xpath)
+        return elements
+    except:
+        print("Timed out waiting for the element to appear.")
 
-    elements = driver.find_elements(by=By.XPATH, value=xpath)
-    return elements
 
-
-def find_element(driver, xpath):
+def find_element(driver, xpath, timeout=0):
     """
     Get single_element matching xpath
 
     :param driver:
     :return: element
     """
-
-    elements = find_elements(driver, xpath)
+    elements = find_elements(driver, xpath, timeout=timeout)
     if elements:
         return elements[0]
 
 
-def find_clickable_element(driver, xpath, timeout=10):
+def find_clickable_element(driver, xpath, timeout=5):
     """
     Get single_element matching xpath
 
@@ -56,7 +62,7 @@ def find_clickable_element(driver, xpath, timeout=10):
         ...
 
 
-def find_attributes(driver, xpath, attribute):
+def find_attributes(driver, xpath, attribute, timeout=0):
     """
     Get single_element matching xpath
 
@@ -64,25 +70,27 @@ def find_attributes(driver, xpath, attribute):
     :return: element
     """
 
-    elements = find_elements(driver, xpath)
+    elements = find_elements(driver, xpath, timeout=timeout)
     if elements:
         return [element.get_attribute(attribute) for element in elements]
 
 
-def find_attribute(driver, xpath, attribute):
+def find_attribute(driver, xpath, attribute, timeout=0):
     """
     Get single_element matching xpath
 
+    :param timeout:
+    :param attribute:
     :param driver:
     :return: element
     """
 
-    elements = find_elements(driver, xpath)
+    elements = find_elements(driver, xpath, timeout=timeout)
     if elements:
         return elements[0].get_attribute(attribute)
 
 
-def find_text(driver, xpath):
+def find_text(driver, xpath, timeout=0):
     """
     Get single_element matching xpath
 
@@ -90,7 +98,7 @@ def find_text(driver, xpath):
     :return: element
     """
 
-    elements = find_elements(driver, xpath)
+    elements = find_elements(driver, xpath, timeout=timeout)
     if elements:
         return elements[0].text
 
