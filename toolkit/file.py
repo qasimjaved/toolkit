@@ -1,14 +1,15 @@
 import os
 
-def write_list_to_text_file(file_path, data):
+def write_list_to_text_file(file_path, data, mode="w"):
     """
     Write list to text file in splitting elements to new line
 
+    :param mode:
     :param file_path:
     :param data:
     :return:
     """
-    with open(file_path, "w") as file:
+    with open(file_path, mode) as file:
         file.write("\n".join(data))
 
 
