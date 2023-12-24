@@ -9,6 +9,9 @@ def write_list_to_text_file(file_path, data, mode="w"):
     :param data:
     :return:
     """
+    if mode == 'a' and os.path.exists(file_path) and os.path.getsize(file_path) > 0:
+        data.insert(0, "")
+
     with open(file_path, mode) as file:
         file.write("\n".join(data))
 
