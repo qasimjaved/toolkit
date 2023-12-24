@@ -60,7 +60,7 @@ def find_clickable_element(driver, xpath, timeout=5):
         )
         return element
     except:
-        ...
+        print("Timed out waiting for clickable element to appear.")
 
 
 def find_attributes(driver, xpath, attribute, timeout=0):
