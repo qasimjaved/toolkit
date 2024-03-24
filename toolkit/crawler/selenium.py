@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver import Chrome as chrome_driver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
@@ -15,10 +16,21 @@ def launch_browser():
     return driver
 
 
-def find_elements(driver, xpath, timeout=0):
+def scroll_down(driver):
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+
+def scroll_up(driver, limit=10):
+    for _ in range(limit):
+        driver.execute_script("scrollBy(0,-500);")
+
+
+def find_elements_per_xpath(driver: chrome_driver, xpath, timeout=0):
     """
     Get single_element matching xpath
 
+    :param timeout:
+    :param xpath:
     :param driver:
     :return: element
     """
@@ -35,19 +47,34 @@ def find_elements(driver, xpath, timeout=0):
         return []
 
 
-def find_element(driver, xpath, timeout=0):
+def find_elements(driver, xpaths, timeout=0):
     """
     Get single_element matching xpath
 
+    :param xpaths:
     :param driver:
     :return: element
     """
-    elements = find_elements(driver, xpath, timeout=timeout)
+    for xpath in xpaths:
+        elements = find_elements_per_xpath(driver, xpath, timeout=timeout)
+        if elements:
+            return elements
+
+
+def find_element(driver, xpaths, timeout=0):
+    """
+    Get single_element matching xpath
+
+    :param xpaths:
+    :param driver:
+    :return: element
+    """
+    elements = find_elements(driver, xpaths, timeout)
     if elements:
         return elements[0]
 
 
-def find_clickable_element(driver, xpath, timeout=5):
+def find_clickable_element_per_xpath(driver, xpath, timeout=5):
     """
     Get single_element matching xpath
 
@@ -63,52 +90,70 @@ def find_clickable_element(driver, xpath, timeout=5):
         print("Timed out waiting for clickable element to appear.")
 
 
-def find_attributes(driver, xpath, attribute, timeout=0):
+def find_clickable_element(driver, xpaths, timeout=5):
     """
     Get single_element matching xpath
 
     :param driver:
     :return: element
     """
+    for xpath in xpaths:
+        element = find_clickable_element_per_xpath(driver, xpath, timeout=timeout)
+        if element:
+            return element
 
-    elements = find_elements(driver, xpath, timeout=timeout)
-    if elements:
-        return [element.get_attribute(attribute) for element in elements]
-    return []
 
-
-def find_attribute(driver, xpath, attribute, timeout=0):
+def find_attributes(driver, xpaths, attribute, timeout=0):
     """
     Get single_element matching xpath
 
-    :param timeout:
+    :param driver:
+    :return: element
+    """
+    elements = find_elements(driver, xpaths, timeout)
+    if elements:
+        return [element.get_attribute(attribute) for element in elements if element.get_attribute(attribute)]
+
+
+def find_attribute(driver, xpaths, attribute, timeout=0):
+    """
+    Get single_element matching xpath
+
+    :param driver:
+    :param xpaths:
     :param attribute:
-    :param driver:
+    :param timeout:
+
     :return: element
     """
 
-    elements = find_elements(driver, xpath, timeout=timeout)
-    if elements:
-        return elements[0].get_attribute(attribute)
+    elements = find_elements(driver, xpaths, timeout)
+    for element in elements:
+        if element.get_attribute(attribute):
+            return element.get_attribute(attribute)
 
 
-def find_text(driver, xpath, timeout=0):
+def find_all_text(driver, xpaths, timeout=0):
     """
     Get single_element matching xpath
 
     :param driver:
     :return: element
     """
-
-    elements = find_elements(driver, xpath, timeout=timeout)
-    if elements:
-        return elements[0].text
-
-
-def scroll_down(driver):
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    elements = find_elements(driver, xpaths, timeout)
+    all_text = [element.text for element in elements if element.text]
+    return all_text
 
 
-def scroll_up(driver, limit=10):
-    for _ in range(limit):
-        driver.execute_script("scrollBy(0,-500);")
+def find_text(driver, xpaths, timeout=0):
+    """
+    Get single_element matching xpath
+
+    :param xpaths:
+    :param driver:
+    :return: element
+    """
+    elements = find_elements(driver, xpaths, timeout)
+    for element in elements:
+        if element.text:
+            return element.text
