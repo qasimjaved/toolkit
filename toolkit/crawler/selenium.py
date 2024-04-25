@@ -59,6 +59,8 @@ def find_elements(driver, xpaths, timeout=0):
         elements = find_elements_per_xpath(driver, xpath, timeout=timeout)
         if elements:
             return elements
+    return []
+
 
 
 def find_element(driver, xpaths, timeout=0):
