@@ -8,6 +8,9 @@ from toolkit.logger import logger
 
 
 class SeleniumHandler:
+    DEFAULT_TIMEOUT = 0
+    CLICKABLE_TIMEOUT = 5
+
     def __init__(self):
         """
         Initializes the SeleniumHandler and launches the Chrome WebDriver instance.
@@ -57,7 +60,7 @@ class SeleniumHandler:
         for _ in range(limit):
             self.driver.execute_script("scrollBy(0,-500);")
 
-    def find_elements_per_xpath(self, xpath: str, timeout: int = 0) -> list:
+    def find_elements_per_xpath(self, xpath: str, timeout: int = DEFAULT_TIMEOUT) -> list:
         """
         Finds all elements that match a given XPath. If a timeout is provided, it waits until elements are located.
 
@@ -77,7 +80,7 @@ class SeleniumHandler:
             print(f"Error while finding elements: {e}")
             return []
 
-    def find_elements(self, xpaths: tuple, timeout: int = 0) -> list:
+    def find_elements(self, xpaths: tuple, timeout: int = DEFAULT_TIMEOUT) -> list:
         """
         Finds elements that match any of the given XPaths and returns the first match.
 
@@ -91,7 +94,7 @@ class SeleniumHandler:
                 return elements
         return []
 
-    def find_element(self, xpaths: tuple, timeout: int = 0) -> webdriver.remote.webelement.WebElement:
+    def find_element(self, xpaths: tuple, timeout: int = DEFAULT_TIMEOUT) -> webdriver.remote.webelement.WebElement:
         """
         Finds a single element that matches any of the given XPaths and returns the first match.
 
@@ -121,7 +124,7 @@ class SeleniumHandler:
             print(f"Error while finding clickable element: {e}")
             return None
 
-    def find_clickable_element(self, xpaths: tuple, timeout: int = 5) -> webdriver.remote.webelement.WebElement:
+    def find_clickable_element(self, xpaths: tuple, timeout: int = CLICKABLE_TIMEOUT) -> webdriver.remote.webelement.WebElement:
         """
         Finds a clickable element matching any of the given XPaths, waiting up to a specified timeout.
 
@@ -135,7 +138,7 @@ class SeleniumHandler:
                 return element
         return None
 
-    def click(self, xpaths: tuple, timeout: int = 5) -> bool:
+    def click(self, xpaths: tuple, timeout: int = CLICKABLE_TIMEOUT) -> bool:
         """
         Finds a clickable element matching any of the given XPaths, waiting up to a specified timeout.
         Then clicks on the element.
@@ -153,11 +156,7 @@ class SeleniumHandler:
         logger.info("Element not found or not clickable")
         return False
 
-
-
-
-
-    def find_attributes(self, xpaths: tuple, attribute: str, timeout: int = 0) -> list:
+    def find_attributes(self, xpaths: tuple, attribute: str, timeout: int = DEFAULT_TIMEOUT) -> list:
         """
         Finds elements matching any of the given XPaths and retrieves the specified attribute for each element.
 
@@ -169,7 +168,7 @@ class SeleniumHandler:
         elements = self.find_elements(xpaths, timeout)
         return [element.get_attribute(attribute) for element in elements if element.get_attribute(attribute)]
 
-    def find_attribute(self, xpaths: tuple, attribute: str, timeout: int = 0) -> str:
+    def find_attribute(self, xpaths: tuple, attribute: str, timeout: int = DEFAULT_TIMEOUT) -> str:
         """
         Finds a single element matching any of the given XPaths and retrieves the specified attribute.
 
@@ -185,7 +184,7 @@ class SeleniumHandler:
                 return attr
         return None
 
-    def find_all_text(self, xpaths: tuple, timeout: int = 0) -> list:
+    def find_all_text(self, xpaths: tuple, timeout: int = DEFAULT_TIMEOUT) -> list:
         """
         Finds all elements matching any of the given XPaths and retrieves the visible text for each element.
 
@@ -196,7 +195,7 @@ class SeleniumHandler:
         elements = self.find_elements(xpaths, timeout)
         return [element.text for element in elements if element.text]
 
-    def find_text(self, xpaths: tuple, timeout: int = 0) -> str:
+    def find_text(self, xpaths: tuple, timeout: int = DEFAULT_TIMEOUT) -> str:
         """
         Finds a single element matching any of the given XPaths and retrieves the visible text.
 
