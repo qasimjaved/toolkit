@@ -56,6 +56,7 @@ class SeleniumHandler:
 
         :param limit: Number of iterations to scroll up (default is 10).
         :return: None
+
         """
         for _ in range(limit):
             self.driver.execute_script("scrollBy(0,-500);")
@@ -105,7 +106,7 @@ class SeleniumHandler:
         :param timeout: Time in seconds to wait for the element to appear (default is 0, meaning no wait).
         :return: The first WebElement found that matches any of the XPaths. Returns None if no elements are found.
         """
-        elements = self.find_elements(xpaths, timeout)
+        elements = self.find_elements(xpaths, timeout=timeout)
         if elements:
             return elements[0]
         return None
