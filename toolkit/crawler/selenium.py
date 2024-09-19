@@ -80,7 +80,7 @@ class SeleniumHandler:
                 elements = to_search_element.find_elements(by=By.XPATH, value=xpath)
             return elements
         except Exception as e:
-            logger.exception(f"Exception while finding elements: {e}")
+            logger.exception(f"Exception while finding elements: {e} for xpath ({xpath}) for URL: {self.driver.current_url}")
             return []
 
     def find_elements(self, xpaths: tuple, sub_element: WebElement = None , timeout: int = DEFAULT_TIMEOUT) -> list:
@@ -109,7 +109,6 @@ class SeleniumHandler:
         elements = self.find_elements(xpaths, timeout=timeout)
         if elements:
             return elements[0]
-        return None
 
     def find_clickable_element_per_xpath(self, xpath: str, timeout: int = 5) -> webdriver.remote.webelement.WebElement:
         """
@@ -125,8 +124,7 @@ class SeleniumHandler:
             )
             return element
         except Exception as e:
-            print(f"Error while finding clickable element: {e}")
-            return None
+            logger.exception(f"Error while finding clickable element: {e}")
 
     def find_clickable_element(self, xpaths: tuple, timeout: int = CLICKABLE_TIMEOUT) -> webdriver.remote.webelement.WebElement:
         """
@@ -140,7 +138,6 @@ class SeleniumHandler:
             element = self.find_clickable_element_per_xpath(xpath, timeout=timeout)
             if element:
                 return element
-        return None
 
     def click(self, xpaths: tuple, timeout: int = CLICKABLE_TIMEOUT) -> bool:
         """
