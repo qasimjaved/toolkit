@@ -1,5 +1,6 @@
 import re
 from typing import List, Optional, Union
+from urllib.parse import urlparse
 
 
 def parse_emails(text: str, unique: bool = True, join_with: Optional[str] = None, url: Optional[str] = None) -> Union[
