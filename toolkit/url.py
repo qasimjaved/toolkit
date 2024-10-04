@@ -1,4 +1,19 @@
 from urllib.parse import urlparse
+import tldextract
+
+
+def parse_domain(url):
+    """
+    Extracts and returns the full domain from a given URL.
+
+    Args:
+        url (str): The URL from which to extract the domain.
+
+    Returns:
+        str: The full domain of the URL (e.g., 'example.co.uk').
+    """
+    extracted = tldextract.extract(url)
+    return f"{extracted.domain}.{extracted.suffix}"  # Concatenate domain and TLD
 
 
 def is_about_page(url: str) -> bool:

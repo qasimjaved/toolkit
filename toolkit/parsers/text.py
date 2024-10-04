@@ -1,6 +1,7 @@
 import re
 from typing import List, Optional, Union
-from urllib.parse import urlparse
+
+from toolkit.url import parse_domain
 
 
 def parse_emails(text: str, unique: bool = True, join_with: Optional[str] = None, url: Optional[str] = None) -> Union[
@@ -28,7 +29,7 @@ def parse_emails(text: str, unique: bool = True, join_with: Optional[str] = None
 
     # Filter emails by domain if a URL is provided
     if url:
-        domain = urlparse(url).netloc
+        domain = parse_domain(url)
         emails = [email for email in emails if email.split('@')[-1] == domain]
 
     # Get unique emails if the flag is set
