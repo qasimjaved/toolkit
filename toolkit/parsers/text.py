@@ -2,6 +2,7 @@ import re
 from typing import List, Optional, Union
 
 from toolkit.url import parse_domain
+from toolkit.cleaning import strip_special_characters
 
 
 def parse_emails(text: str, unique: bool = True, join_with: Optional[str] = None, url: Optional[str] = None) -> Union[
@@ -26,6 +27,7 @@ def parse_emails(text: str, unique: bool = True, join_with: Optional[str] = None
 
     # Find all matches in the text
     emails = re.findall(email_pattern, text)
+    emails = [strip_special_characters(email) for email in emails if email]
 
     # Filter emails by domain if a URL is provided
     if url:
@@ -36,5 +38,6 @@ def parse_emails(text: str, unique: bool = True, join_with: Optional[str] = None
     if unique:
         emails = list(set(emails))
 
+    emails = sorted(emails)
     # Return joined string if join_with is provided, otherwise return a list
     return join_with.join(emails) if join_with else emails

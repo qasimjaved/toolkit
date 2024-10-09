@@ -117,6 +117,8 @@ def parse_text(response: Optional[Response], xpaths: Optional[List[str]] = (),
     else:
         for xpath in xpaths:
             all_text = _extract_text_with_response(response, xpath, nav_child, return_html, filtered_tags)
+            if all_text:
+                break
 
     return _process_extracted_text(all_text, extract_all, index, join_with)
 
