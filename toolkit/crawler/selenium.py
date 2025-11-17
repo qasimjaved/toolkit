@@ -1,9 +1,10 @@
 from selenium import webdriver
-from selenium.webdriver import Chrome as chrome_driver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.common.exceptions import TimeoutException
+
 
 from toolkit.logger import logger
 
@@ -79,6 +80,8 @@ class SeleniumHandler:
             else:
                 elements = to_search_element.find_elements(by=By.XPATH, value=xpath)
             return elements
+        except TimeoutException:
+            return []
         except Exception as e:
             logger.exception(f"Exception while finding elements: {e} for xpath ({xpath}) for URL: {self.driver.current_url}")
             return []
@@ -98,58 +101,89 @@ class SeleniumHandler:
                 return elements
         return []
 
-    def find_element(self, xpaths: tuple, timeout: int = DEFAULT_TIMEOUT) -> webdriver.remote.webelement.WebElement:
+    def find_element(self, xpaths: tuple, sub_element: WebElement = None, timeout: int = DEFAULT_TIMEOUT, index: int = 0) -> webdriver.remote.webelement.WebElement:
         """
-        Finds a single element that matches any of the given XPaths and returns the first match.
+        Finds a single element that matches any of the given XPaths and returns the element at the specified index.
 
         :param xpaths: A list of XPath strings to find the element.
+        :param sub_element: The parent element to search within (default is None).
         :param timeout: Time in seconds to wait for the element to appear (default is 0, meaning no wait).
-        :return: The first WebElement found that matches any of the XPaths. Returns None if no elements are found.
+        :param index: Index of the element to return (default is 0, meaning first element).
+        :return: The WebElement found at the specified index that matches any of the XPaths. Returns None if no elements are found or index is out of range.
         """
-        elements = self.find_elements(xpaths, timeout=timeout)
-        if elements:
-            return elements[0]
+        elements = self.find_elements(xpaths, sub_element=sub_element, timeout=timeout)
+        if elements and 0 <= index < len(elements):
+            return elements[index]
 
-    def find_clickable_element_per_xpath(self, xpath: str, timeout: int = 5) -> webdriver.remote.webelement.WebElement:
+    def find_clickable_element_per_xpath(self, xpath: str, sub_element: WebElement = None, timeout: int = 5) -> webdriver.remote.webelement.WebElement:
         """
         Finds a clickable element matching the given XPath, waiting up to a specified timeout.
 
         :param xpath: The XPath string to find the clickable element.
+        :param sub_element: The parent element to search within (default is None).
         :param timeout: Time in seconds to wait for the element to become clickable (default is 5).
         :return: The WebElement found that is clickable. Returns None if no element is found within the timeout.
         """
         try:
-            element = WebDriverWait(self.driver, timeout).until(
+            to_search_element = sub_element if sub_element else self.driver
+            element = WebDriverWait(to_search_element, timeout).until(
                 EC.element_to_be_clickable((By.XPATH, xpath))
             )
             return element
+        except TimeoutException:
+            pass
         except Exception as e:
             logger.exception(f"Error while finding clickable element: {e}")
 
-    def find_clickable_element(self, xpaths: tuple, timeout: int = CLICKABLE_TIMEOUT) -> webdriver.remote.webelement.WebElement:
+    def find_clickable_element(self, xpaths: tuple, sub_element: WebElement = None, timeout: int = CLICKABLE_TIMEOUT, index: int = 0) -> webdriver.remote.webelement.WebElement:
         """
-        Finds a clickable element matching any of the given XPaths, waiting up to a specified timeout.
+        Finds clickable elements matching any of the given XPaths, waiting up to a specified timeout, and returns the element at the specified index.
 
         :param xpaths: A list of XPath strings to find the clickable element.
+        :param sub_element: The parent element to search within (default is None).
         :param timeout: Time in seconds to wait for the element to become clickable (default is 5).
-        :return: The first clickable WebElement found. Returns None if no clickable element is found within the timeout.
+        :param index: Index of the clickable element to return (default is 0, meaning first element).
+        :return: The clickable WebElement found at the specified index. Returns None if no clickable element is found within the timeout or index is out of range.
         """
+        all_clickable_elements = []
         for xpath in xpaths:
-            element = self.find_clickable_element_per_xpath(xpath, timeout=timeout)
-            if element:
-                return element
+            # First, wait for at least one clickable element to appear
+            try:
+                to_search_element = sub_element if sub_element else self.driver
+                WebDriverWait(to_search_element, timeout).until(
+                    EC.element_to_be_clickable((By.XPATH, xpath))
+                )
+            except TimeoutException:
+                continue
+            
+            # Now find all elements matching this xpath
+            elements = self.find_elements_per_xpath(xpath, sub_element=sub_element, timeout=0)
+            for element in elements:
+                try:
+                    # Check if element is displayed and enabled (basic clickability check)
+                    if element.is_displayed() and element.is_enabled():
+                        all_clickable_elements.append(element)
+                except:
+                    continue
+            if all_clickable_elements:
+                break
+        
+        if all_clickable_elements and 0 <= index < len(all_clickable_elements):
+            return all_clickable_elements[index]
 
-    def click(self, xpaths: tuple, timeout: int = CLICKABLE_TIMEOUT) -> bool:
+    def click(self, xpaths: tuple, sub_element: WebElement = None, timeout: int = CLICKABLE_TIMEOUT, index: int = 0) -> bool:
         """
-        Finds a clickable element matching any of the given XPaths, waiting up to a specified timeout.
+        Finds a clickable element matching any of the given XPaths at the specified index, waiting up to a specified timeout.
         Then clicks on the element.
 
         :param xpaths: A list of XPath strings to find the clickable element.
+        :param sub_element: The parent element to search within (default is None).
         :param timeout: Time in seconds to wait for the element to become clickable (default is 5).
+        :param index: Index of the clickable element to click (default is 0, meaning first element).
         :return: True if the element was found and clicked, False otherwise.
 
         """
-        element = self.find_clickable_element(xpaths, timeout)
+        element = self.find_clickable_element(xpaths, sub_element=sub_element, timeout=timeout, index=index)
         if element:
             logger.info("Clickable element found")
             element.click()
@@ -170,21 +204,20 @@ class SeleniumHandler:
         elements = self.find_elements(xpaths, sub_element=sub_element, timeout=timeout)
         return [element.get_attribute(attribute) for element in elements if element.get_attribute(attribute)]
 
-    def find_attribute(self, xpaths: tuple, attribute: str = 'href', sub_element: WebElement = None, timeout: int = DEFAULT_TIMEOUT) -> str:
+    def find_attribute(self, xpaths: tuple, attribute: str = 'href', sub_element: WebElement = None, timeout: int = DEFAULT_TIMEOUT, index: int = 0) -> str:
         """
-        Finds a single element matching any of the given XPaths and retrieves the specified attribute.
+        Finds a single element matching any of the given XPaths at the specified index and retrieves the specified attribute.
 
         :param xpaths: A list of XPath strings to find the element.
         :param attribute: The attribute name to retrieve from the found element.
         :param sub_element: The parent element to search within (default is None).
         :param timeout: Time in seconds to wait for the element to appear (default is 0, meaning no wait).
-        :return: The attribute value of the first matching element. Returns None if no element is found or attribute is missing.
+        :param index: Index of the element to get the attribute from (default is 0, meaning first element).
+        :return: The attribute value of the element at the specified index. Returns None if no element is found, index is out of range, or attribute is missing.
         """
         elements = self.find_elements(xpaths, sub_element=sub_element, timeout=timeout)
-        for element in elements:
-            attr = element.get_attribute(attribute)
-            if attr:
-                return attr
+        if elements and 0 <= index < len(elements):
+            return elements[index].get_attribute(attribute)
 
     def find_all_text(self, xpaths: tuple, sub_element: WebElement = None, timeout: int = DEFAULT_TIMEOUT) -> list:
         """
@@ -198,19 +231,19 @@ class SeleniumHandler:
         elements = self.find_elements(xpaths, sub_element=sub_element, timeout=timeout)
         return [element.text for element in elements if element.text]
 
-    def find_text(self, xpaths: tuple, sub_element: WebElement = None, timeout: int = DEFAULT_TIMEOUT) -> str:
+    def find_text(self, xpaths: tuple, sub_element: WebElement = None, timeout: int = DEFAULT_TIMEOUT, index: int = 0) -> str:
         """
-        Finds a single element matching any of the given XPaths and retrieves the visible text.
+        Finds a single element matching any of the given XPaths at the specified index and retrieves the visible text.
 
         :param xpaths: A list of XPath strings to find the element.
         :param sub_element: The parent element to search within (default is None).
         :param timeout: Time in seconds to wait for the element to appear (default is 0, meaning no wait).
-        :return: The visible text of the first matching element. Returns None if no elements are found or have no text.
+        :param index: Index of the element to get the text from (default is 0, meaning first element).
+        :return: The visible text of the element at the specified index. Returns None if no elements are found, index is out of range, or element has no text.
         """
         elements = self.find_elements(xpaths, sub_element=sub_element, timeout=timeout)
-        for element in elements:
-            if element.text:
-                return element.text
+        if elements and 0 <= index < len(elements):
+            return elements[index].text
 
     def quit_browser(self) -> None:
         """
